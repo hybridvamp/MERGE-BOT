@@ -6,6 +6,7 @@ RUN chmod 777 /usr/src/mergebot
 RUN apt-get -y update \
     && apt-get -y upgrade \
     && apt-get install apt-utils -y \ 
+    && apt-get install unzip
     && apt-get install -y python3-full python3-pip git wget curl pv jq ffmpeg neofetch mediainfo \
     && apt-get clean
 

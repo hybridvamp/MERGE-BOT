@@ -16,7 +16,7 @@ RUN curl https://rclone.org/install.sh | bash
 RUN python3 -m venv venv && chmod +x venv/bin/python
 
 COPY requirements.txt .
-RUN venv/bin/python -m pip install --no-cache-dir -r requirements.txt
+RUN venv/bin/python -m pip install -r requirements.txt
 
 COPY . .
 

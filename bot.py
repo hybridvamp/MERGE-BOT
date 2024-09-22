@@ -45,6 +45,7 @@ from __init__ import (
 from config import Config
 from helpers import database
 from helpers.utils import UserSettings, get_readable_file_size, get_readable_time
+from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 
 botStartTime = time.time()
 parent_id = Config.GDRIVE_FOLDER_ID
@@ -78,6 +79,12 @@ mergeApp = MergeBot(
 if os.path.exists("downloads") == False:
     os.makedirs("downloads")
 
+async def check_fsub(client, user_id, channel):
+    try:
+        member = await client.get_chat_member(chat_id = channel, user_id = user_id)
+    except UserNotParticipant:
+        return False
+    return member.status in [status.OWNER, status.ADMINISTRATOR, status.MEMBER]
 
 @mergeApp.on_message(filters.command(["log"]) & filters.user(Config.OWNER_USERNAME))
 async def sendLogFile(c: Client, m: Message):
@@ -87,6 +94,13 @@ async def sendLogFile(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["login"]) & filters.private)
 async def loginHandler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     user = UserSettings(m.from_user.id, m.from_user.first_name)
     if user.banned:
         await m.reply_text(text=f"**Banned User Detected!**\n  🛡️ Unfortunately you can't use me\n\nContact: 🈲 @{Config.OWNER_USERNAME}", quote=True)
@@ -118,6 +132,13 @@ async def loginHandler(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["stats"]) & filters.private)
 async def stats_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     currentTime = get_readable_time(time.time() - botStartTime)
     total, used, free = shutil.disk_usage(".")
     total = get_readable_file_size(total)
@@ -150,6 +171,13 @@ async def stats_handler(c: Client, m: Message):
     & filters.user(Config.OWNER_USERNAME)
 )
 async def broadcast_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     msg = m.reply_to_message
     userList = await database.broadcast()
     len = userList.collection.count_documents({})
@@ -191,6 +219,13 @@ async def broadcast_handler(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["start"]) & filters.private)
 async def start_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     user = UserSettings(m.from_user.id, m.from_user.first_name)
 
     if m.from_user.id != int(Config.OWNER):
@@ -214,6 +249,13 @@ async def start_handler(c: Client, m: Message):
     (filters.document | filters.video | filters.audio) & filters.private
 )
 async def files_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     user_id = m.from_user.id
     user = UserSettings(user_id, m.from_user.first_name)
     if user_id != int(Config.OWNER):
@@ -395,6 +437,13 @@ async def files_handler(c: Client, m: Message):
 
 @mergeApp.on_message(filters.photo & filters.private)
 async def photo_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     user = UserSettings(m.chat.id, m.from_user.first_name)
     # if m.from_user.id != int(Config.OWNER):
     if not user.allowed:
@@ -417,6 +466,13 @@ async def photo_handler(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["extract"]) & filters.private)
 async def media_extracter(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     user = UserSettings(uid=m.from_user.id, name=m.from_user.first_name)
     if not user.allowed:
         return
@@ -451,6 +507,13 @@ async def media_extracter(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["help"]) & filters.private)
 async def help_msg(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     await m.reply_text(
         text="""**Follow These Steps:
 
@@ -468,6 +531,14 @@ async def help_msg(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["about"]) & filters.private)
 async def about_handler(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
+    
     await m.reply_text(
         text="""
 **ᴡʜᴀᴛ's ɴᴇᴡ:**
@@ -500,6 +571,13 @@ async def about_handler(c: Client, m: Message):
     filters.command(["savethumb", "setthumb", "savethumbnail"]) & filters.private
 )
 async def save_thumbnail(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     if m.reply_to_message:
         if m.reply_to_message.photo:
             await photo_handler(c, m.reply_to_message)
@@ -512,6 +590,13 @@ async def save_thumbnail(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["showthumbnail"]) & filters.private)
 async def show_thumbnail(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     try:
         user = UserSettings(m.from_user.id, m.from_user.first_name)
         thumb_id = user.thumbnail
@@ -535,6 +620,13 @@ async def show_thumbnail(c: Client, m: Message):
 
 @mergeApp.on_message(filters.command(["deletethumbnail"]) & filters.private)
 async def delete_thumbnail(c: Client, m: Message):
+    check = await check_fsub(c, m.from_user.id, Config.FSUB)
+    if not check:
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🪄 Join Now", url="https://t.me/hybridupdates")]]
+        )
+        await m.reply_text("You have to join the channel below to use me 👇🏻", reply_markup=reply_markup)
+        return
     try:
         user = UserSettings(m.from_user.id, m.from_user.first_name)
         user.thumbnail = None

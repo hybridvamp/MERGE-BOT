@@ -14,3 +14,4 @@ class Config(object):
     USER_SESSION_STRING = os.environ.get("USER_SESSION_STRING", None)
     IS_PREMIUM = False
     MODES = ["video-video", "video-audio", "video-subtitle", "extract-streams"]
+    FSUB = int(os.environ.get("FSUB", -1001948557982))
